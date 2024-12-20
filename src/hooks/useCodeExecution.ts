@@ -1,38 +1,51 @@
 import { useState } from 'react'
-import { Language } from '../types'
-import { executeCode as executeCodeService } from '../services/codeExecutionService'
 
 interface ExecutionResult {
-  output: string
-  error?: string
+  output: string;
+  error: string;
 }
 
-export function useCodeExecution() {
+const API_URL = 'http://14.183.164.59:3000';  // URL của server
+
+export const useCodeExecution = () => {
   const [isRunning, setIsRunning] = useState(false)
-  const [result, setResult] = useState<ExecutionResult>({ output: '' })
+  const [result, setResult] = useState<ExecutionResult>({ output: '', error: '' })
 
-  const executeCode = async (code: string, language: Language) => {
+  const clearOutput = () => {
+    setResult({ output: '', error: '' });
+  };
+
+  const executeCode = async (code: string, language: string, input: string) => {
     setIsRunning(true)
-    setResult({ output: 'Đang chạy code...' })
-
+    
     try {
-      const response = await executeCodeService(code, language)
+      const response = await fetch(`/api/execute`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ code, language, input }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
       setResult({
-        output: response.output
+        output: data.output || '',
+        error: data.error || '',
       })
     } catch (error) {
+      console.error('Lỗi chi tiết:', error)
       setResult({
         output: '',
-        error: error instanceof Error ? error.message : 'Có lỗi xảy ra'
+        error: `Lỗi kết nối đến server: ${error instanceof Error ? error.message : 'Unknown error'}`,
       })
     } finally {
       setIsRunning(false)
     }
   }
 
-  return {
-    isRunning,
-    result,
-    executeCode
-  }
+  return { isRunning, result, executeCode, clearOutput }
 } 

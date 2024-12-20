@@ -4,24 +4,72 @@ import { OutputPanel } from './components/OutputPanel'
 import { LanguageSelector } from './components/LanguageSelector'
 import { ThemeToggle } from './components/ThemeToggle'
 import { EditorSettings } from './components/EditorSettings'
-import { useCodePersist } from './hooks/useCodePersist'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 import { useCodeExecution } from './hooks/useCodeExecution'
 import { useTheme } from './contexts/ThemeContext'
+import { useLocalStorage } from './hooks/useLocalStorage'
+import { useDefaultCode } from './hooks/useDefaultCode'
 import './App.css'
 
-function App() {
-  const { theme } = useTheme()
-  const { code, setCode, language, handleLanguageChange } = useCodePersist('cpp')
-  const { isRunning, result, executeCode } = useCodeExecution()
-  const [editorSettings, setEditorSettings] = useState({
+interface EditorState {
+  code: string;
+  language: string;
+  input: string;
+  settings: {
+    fontSize: number;
+    tabSize: number;
+    wordWrap: boolean;
+  };
+}
+
+const defaultState: EditorState = {
+  code: `// Chọn ngôn ngữ để xem code mẫu
+// hoặc bắt đầu viết code của bạn`,
+  language: 'javascript',
+  input: '',
+  settings: {
     fontSize: 14,
     tabSize: 2,
     wordWrap: true
-  })
+  }
+};
+
+function App() {
+  const { theme } = useTheme()
+  const [editorState, setEditorState] = useLocalStorage<EditorState>('editor-state', defaultState)
+  const { 
+    isRunning, 
+    result, 
+    executeCode,
+    clearOutput 
+  } = useCodeExecution();
+  const { getDefaultCode } = useDefaultCode()
+
+  const handleCodeChange = (newCode: string) => {
+    setEditorState(prev => ({ ...prev, code: newCode }));
+  };
+
+  const handleLanguageChange = (newLanguage: string) => {
+    setEditorState(prev => ({
+      ...prev,
+      language: newLanguage,
+      code: getDefaultCode(newLanguage)
+    }));
+  };
+
+  const handleInputChange = (newInput: string) => {
+    setEditorState(prev => ({ ...prev, input: newInput }));
+  };
+
+  const handleSettingsChange = (key: keyof EditorState['settings'], value: any) => {
+    setEditorState(prev => ({
+      ...prev,
+      settings: { ...prev.settings, [key]: value }
+    }));
+  };
 
   const handleRunCode = () => {
-    executeCode(code, language)
+    executeCode(editorState.code, editorState.language, editorState.input)
   }
 
   useKeyboardShortcuts(handleRunCode)
@@ -32,15 +80,15 @@ function App() {
         <h1 className="text-xl font-bold">Code Editor</h1>
         <div className="flex items-center gap-4">
           <LanguageSelector 
-            value={language}
+            value={editorState.language}
             onChange={handleLanguageChange}
           />
           <ThemeToggle />
           <EditorSettings
-            {...editorSettings}
-            onFontSizeChange={size => setEditorSettings(prev => ({ ...prev, fontSize: size }))}
-            onTabSizeChange={size => setEditorSettings(prev => ({ ...prev, tabSize: size }))}
-            onWordWrapChange={wrap => setEditorSettings(prev => ({ ...prev, wordWrap: wrap }))}
+            {...editorState.settings}
+            onFontSizeChange={size => handleSettingsChange('fontSize', size)}
+            onTabSizeChange={size => handleSettingsChange('tabSize', size)}
+            onWordWrapChange={wrap => handleSettingsChange('wordWrap', wrap)}
           />
           <button
             onClick={handleRunCode}
@@ -55,11 +103,11 @@ function App() {
       <div className="flex-1 w-full grid grid-cols-2">
         <div className={`h-full ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100'}`}>
           <CodeEditor 
-            language={language}
-            value={code}
-            onChange={setCode}
+            language={editorState.language}
+            value={editorState.code}
+            onChange={handleCodeChange}
             options={{
-              ...editorSettings,
+              ...editorState.settings,
               theme: theme === 'dark' ? 'vs-dark' : 'vs',
               minimap: { enabled: false },
               scrollBeyondLastLine: false,
@@ -73,6 +121,10 @@ function App() {
             output={result.output}
             error={result.error}
             theme={theme}
+            input={editorState.input}
+            onInputChange={handleInputChange}
+            onOutputClear={clearOutput}
+            isRunning={isRunning}
           />
         </div>
       </div>
