@@ -4,9 +4,18 @@ interface CodeEditorProps {
   language: string
   value: string
   onChange: (value: string) => void
+  options?: {
+    theme?: string
+    fontSize?: number
+    tabSize?: number
+    wordWrap?: boolean
+    minimap?: { enabled: boolean }
+    scrollBeyondLastLine?: boolean
+    automaticLayout?: boolean
+  }
 }
 
-export function CodeEditor({ language, value, onChange }: CodeEditorProps) {
+export const CodeEditor = ({ language, value, onChange, options }: CodeEditorProps) => {
   const getLanguageId = () => {
     switch (language) {
       case 'cpp':
@@ -35,14 +44,14 @@ export function CodeEditor({ language, value, onChange }: CodeEditorProps) {
       language={getLanguageId()}
       value={value}
       onChange={handleEditorChange}
-      theme="vs-dark"
+      theme={options?.theme || "vs-dark"}
       options={{
-        fontSize: 14,
-        minimap: { enabled: false },
-        scrollBeyondLastLine: false,
-        automaticLayout: true,
-        tabSize: 2,
-        wordWrap: 'on',
+        fontSize: options?.fontSize || 14,
+        minimap: options?.minimap || { enabled: false },
+        scrollBeyondLastLine: options?.scrollBeyondLastLine || false,
+        automaticLayout: options?.automaticLayout || true,
+        tabSize: options?.tabSize || 2,
+        wordWrap: options?.wordWrap || 'on',
         padding: { top: 16, bottom: 16 },
       }}
     />

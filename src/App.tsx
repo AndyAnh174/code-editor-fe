@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { CodeEditor } from './components/CodeEditor'
 import { OutputPanel } from './components/OutputPanel'
 import { LanguageSelector } from './components/LanguageSelector'

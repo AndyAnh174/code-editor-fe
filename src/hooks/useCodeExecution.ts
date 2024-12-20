@@ -5,8 +5,6 @@ interface ExecutionResult {
   error: string;
 }
 
-const API_URL = 'http://14.183.164.59:3000';  // URL của server
-
 export const useCodeExecution = () => {
   const [isRunning, setIsRunning] = useState(false)
   const [result, setResult] = useState<ExecutionResult>({ output: '', error: '' })
@@ -19,7 +17,7 @@ export const useCodeExecution = () => {
     setIsRunning(true)
     
     try {
-      const response = await fetch(`/api/execute`, {
+      const response = await fetch('/api/execute', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
