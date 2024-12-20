@@ -2,34 +2,27 @@ export const useDefaultCode = () => {
   const getDefaultCode = (language: string): string => {
     switch (language.toLowerCase()) {
       case 'javascript':
-        return `// Chương trình JavaScript Hello World
-console.log("Hello World!");
-
-// Ví dụ với input
-const name = input("Nhập tên của bạn: ");
-console.log("Xin chào", name);`;
+        return `// JavaScript code here
+const name = input("What's your name?");  // Đọc input từ người dùng
+console.log("Hello " + name + "!");       // In ra màn hình`;
 
       case 'python':
-        return `# Chương trình Python Hello World
-print("Hello World!")
-
-# Ví dụ với input
-name = input("Nhập tên của bạn: ")
-print("Xin chào", name)`;
+        return `# Python code here
+name = input("What's your name?")  # Đọc input từ người dùng
+print("Hello " + name + "!")       # In ra màn hình`;
 
       case 'java':
         return `import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        // Chương trình Java Hello World
-        System.out.println("Hello World!");
+        Scanner scanner = new Scanner(System.in);
         
-        // Ví dụ với input
-        Scanner sc = new Scanner(System.in);
-        System.out.print("Nhập tên của bạn: ");
-        String name = sc.nextLine();
-        System.out.println("Xin chào " + name);
+        System.out.print("What's your name? ");
+        String name = scanner.nextLine();
+        System.out.println("Hello " + name + "!");
+        
+        scanner.close();
     }
 }`;
 
@@ -39,20 +32,15 @@ public class Main {
 using namespace std;
 
 int main() {
-    // Chương trình C++ Hello World
-    cout << "Hello World!" << endl;
-    
-    // Ví dụ với input
     string name;
-    cout << "Nhập tên của bạn: ";
+    cout << "What's your name? ";
     getline(cin, name);
-    cout << "Xin chào " << name << endl;
-    
+    cout << "Hello " << name << "!" << endl;
     return 0;
 }`;
 
       default:
-        return '// Chọn ngôn ngữ để xem code mẫu';
+        return '// Select a language to start coding';
     }
   };
 

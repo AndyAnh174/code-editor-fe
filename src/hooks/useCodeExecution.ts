@@ -1,5 +1,8 @@
 import { useState } from 'react'
 
+// Luôn sử dụng Cloudflare URL cho cả dev và prod
+const API_URL = 'https://tulsa-rebecca-pat-cfr.trycloudflare.com';
+
 interface ExecutionResult {
   output: string;
   error: string;
@@ -17,19 +20,29 @@ export const useCodeExecution = () => {
     setIsRunning(true)
     
     try {
-      const response = await fetch('/api/execute', {
+      console.log('Sending request to:', `${API_URL}/api/execute`); // Debug log
+      
+      const response = await fetch(`${API_URL}/api/execute`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ code, language, input }),
+        body: JSON.stringify({ 
+          code, 
+          language, 
+          input 
+        })
       })
 
+      console.log('Response status:', response.status); // Debug log
+      
+      const data = await response.json()
+      console.log('Response data:', data); // Debug log
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        throw new Error(data.error || `HTTP error! status: ${response.status}`)
       }
 
-      const data = await response.json()
       setResult({
         output: data.output || '',
         error: data.error || '',

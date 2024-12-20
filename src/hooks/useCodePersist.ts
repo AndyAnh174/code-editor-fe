@@ -1,38 +1,24 @@
-import { useState, useEffect } from 'react'
-import { Language } from '../types'
-import { DEFAULT_CODE } from '../constants/defaultCode'
+import { useLocalStorage } from './useLocalStorage'
 
-export function useCodePersist(initialLanguage: Language) {
-  const [code, setCode] = useState('')
-  const [language, setLanguage] = useState<Language>(initialLanguage)
+interface SavedCode {
+  code: string;
+  language: string;
+  lastModified: number;
+}
 
-  useEffect(() => {
-    const savedCode = localStorage.getItem(`code_${language}`)
-    if (savedCode) {
-      setCode(savedCode)
-    } else {
-      setCode(DEFAULT_CODE[language])
-    }
-  }, [language])
+export const useCodePersist = () => {
+  const [savedCodes, setSavedCodes] = useLocalStorage<SavedCode[]>('saved-codes', [])
 
-  useEffect(() => {
-    localStorage.setItem(`code_${language}`, code)
-  }, [code, language])
-
-  const handleLanguageChange = (newLang: Language) => {
-    setLanguage(newLang)
-    const savedCode = localStorage.getItem(`code_${newLang}`)
-    if (savedCode) {
-      setCode(savedCode)
-    } else {
-      setCode(DEFAULT_CODE[newLang])
-    }
+  const saveCode = (code: string, language: string) => {
+    setSavedCodes(prev => [
+      ...prev,
+      {
+        code,
+        language,
+        lastModified: Date.now()
+      }
+    ].slice(-10)) // Giữ 10 code gần nhất
   }
 
-  return {
-    code,
-    setCode,
-    language,
-    handleLanguageChange
-  }
+  return { savedCodes, saveCode }
 } 

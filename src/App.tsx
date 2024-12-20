@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { CodeEditor } from './components/CodeEditor'
 import { OutputPanel } from './components/OutputPanel'
 import { LanguageSelector } from './components/LanguageSelector'
@@ -6,7 +7,6 @@ import { EditorSettings } from './components/EditorSettings'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 import { useCodeExecution } from './hooks/useCodeExecution'
 import { useTheme } from './contexts/ThemeContext'
-import { useLocalStorage } from './hooks/useLocalStorage'
 import { useDefaultCode } from './hooks/useDefaultCode'
 import './App.css'
 
@@ -22,8 +22,7 @@ interface EditorState {
 }
 
 const defaultState: EditorState = {
-  code: `// Chọn ngôn ngữ để xem code mẫu
-// hoặc bắt đầu viết code của bạn`,
+  code: `// Select a language to start coding`,
   language: 'javascript',
   input: '',
   settings: {
@@ -35,13 +34,8 @@ const defaultState: EditorState = {
 
 function App() {
   const { theme } = useTheme()
-  const [editorState, setEditorState] = useLocalStorage<EditorState>('editor-state', defaultState)
-  const { 
-    isRunning, 
-    result, 
-    executeCode,
-    clearOutput 
-  } = useCodeExecution();
+  const [editorState, setEditorState] = useState<EditorState>(defaultState)
+  const { isRunning, result, executeCode, clearOutput } = useCodeExecution();
   const { getDefaultCode } = useDefaultCode()
 
   const handleCodeChange = (newCode: string) => {
